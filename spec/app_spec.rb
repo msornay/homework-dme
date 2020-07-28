@@ -7,6 +7,20 @@ def data_file(name)
 end
 
 describe "Cardiologs" do
+  it "requires data file" do
+    post "/delineation"
+
+    expect(last_response).to_not be_ok
+    expect(last_response.status).to eq(400)
+  end
+
+  it "requires starts_at parameter" do
+    post "/delineation", data: data_file("minimal.csv")
+
+    expect(last_response).to_not be_ok
+    expect(last_response.status).to eq(400)
+  end
+
   it "returns correct data for minimal data file" do
     post "/delineation", data: data_file("minimal.csv"), starts_at: "2020-07-28"
 

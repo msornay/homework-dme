@@ -9,10 +9,12 @@ ONE_SECOND_IN_MS = 1000
 
 post "/delineation" do
   if !params[:data] || !params[:data][:tempfile]
+    status :bad_request
     return { error: "data file must be present" }.to_json
   end
 
   if !params[:starts_at]
+    status :bad_request
     return { error: "starts_at must be present" }.to_json
   end
 
@@ -30,50 +32,49 @@ post "/delineation" do
   maximum_heart_rate = nil
 
   csv.each do |line|
-    type, onset, offset, *tags = line
+    type, onset, _offset, *tags = line
 
     onset = onset.to_i
-    offset = offset.to_i
 
     if type == "P" && tags.include?("premature")
       premature_p_waves += 1
     end
 
-    if type == "QRS" && tags.include?("premature")
+    next unless type == "QRS"
+
+    qrs_complexes += 1
+
+    if tags.include?("premature")
       premature_qrs_complexes += 1
     end
 
-    if type == "QRS"
-      qrs_complexes += 1
+    if minimum_onset.nil? || onset < minimum_onset
+      minimum_onset = onset
+    end
 
-      if minimum_onset.nil? || onset < minimum_onset
-        minimum_onset = onset
+    if maximum_onset.nil? || onset > maximum_onset
+      maximum_onset = onset
+    end
+
+    if last_heart_beat_at.nil?
+      last_heart_beat_at = onset
+    else
+      minutes = (onset - last_heart_beat_at).to_f / ONE_MINUTE_IN_MS
+      heart_rate = (1 / minutes).to_i
+      last_heart_beat_at = onset
+
+      if minimum_heart_rate.nil? || minimum_heart_rate[:rate] > heart_rate
+        minimum_heart_rate = {
+          rate: heart_rate,
+          starts_at: starts_at + (onset / ONE_SECOND_IN_MS)
+        }
       end
 
-      if maximum_onset.nil? || onset > maximum_onset
-        maximum_onset = onset
-      end
-
-      if last_heart_beat_at.nil?
-        last_heart_beat_at = onset
-      else
-        minutes = (onset - last_heart_beat_at).to_f / ONE_MINUTE_IN_MS
-        heart_rate = (1 / minutes).to_i
-        last_heart_beat_at = onset
-
-        if minimum_heart_rate.nil? || minimum_heart_rate[:rate] > heart_rate
-          minimum_heart_rate = {
-            rate: heart_rate,
-            starts_at: starts_at + (onset / ONE_SECOND_IN_MS)
-          }
-        end
-
-        if maximum_heart_rate.nil? || maximum_heart_rate[:rate] < heart_rate
-          maximum_heart_rate = {
-            rate: heart_rate,
-            starts_at: starts_at + (onset / ONE_SECOND_IN_MS)
-          }
-        end
+      if maximum_heart_rate.nil? || maximum_heart_rate[:rate] < heart_rate
+        maximum_heart_rate = {
+          rate: heart_rate,
+          starts_at: starts_at + (onset / ONE_SECOND_IN_MS)
+        }
       end
     end
   end
