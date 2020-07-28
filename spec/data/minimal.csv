@@ -1,0 +1,13 @@
+INV,92,248
+P,129,166,premature
+P,836,924,junctional,premature
+QRS,964,1055,premature
+T,1055,1339
+P,2033,2145
+QRS,2181,2270
+T,2270,2564
+P,3258,3354
+QRS,3397,3488,premature
+T,3488,3775
+P,4477,4578
+QRS,4616,4710,premature,junctional

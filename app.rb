@@ -79,7 +79,7 @@ post "/delineation" do
   end
 
   mean_heart_rate = (
-    qrs_complexes /
+    (qrs_complexes - 1) /
     ((maximum_onset - minimum_onset).to_f / ONE_MINUTE_IN_MS)
   )
 
