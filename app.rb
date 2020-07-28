@@ -13,7 +13,7 @@ post "/delineation" do
     return { error: "data file must be present" }.to_json
   end
 
-  if !params[:starts_at]
+  unless params[:starts_at]
     status :bad_request
     return { error: "starts_at must be present" }.to_json
   end
@@ -36,25 +36,14 @@ post "/delineation" do
 
     onset = onset.to_i
 
-    if type == "P" && tags.include?("premature")
-      premature_p_waves += 1
-    end
+    premature_p_waves += 1 if type == "P" && tags.include?("premature")
 
     next unless type == "QRS"
 
     qrs_complexes += 1
-
-    if tags.include?("premature")
-      premature_qrs_complexes += 1
-    end
-
-    if minimum_onset.nil? || onset < minimum_onset
-      minimum_onset = onset
-    end
-
-    if maximum_onset.nil? || onset > maximum_onset
-      maximum_onset = onset
-    end
+    premature_qrs_complexes += 1 if tags.include?("premature")
+    minimum_onset = onset if minimum_onset.nil? || onset < minimum_onset
+    maximum_onset = onset if maximum_onset.nil? || onset > maximum_onset
 
     if last_heart_beat_at.nil?
       last_heart_beat_at = onset
@@ -84,11 +73,13 @@ post "/delineation" do
     ((maximum_onset - minimum_onset).to_f / ONE_MINUTE_IN_MS)
   )
 
-  JSON.pretty_generate({
-    premature_p_waves: premature_p_waves,
-    premature_qrs_complexes: premature_qrs_complexes,
-    mean_heart_rate: mean_heart_rate.to_i,
-    minimum_heart_rate: minimum_heart_rate,
-    maximum_heart_rate: maximum_heart_rate,
-  })
+  JSON.pretty_generate(
+    {
+      premature_p_waves: premature_p_waves,
+      premature_qrs_complexes: premature_qrs_complexes,
+      mean_heart_rate: mean_heart_rate.to_i,
+      minimum_heart_rate: minimum_heart_rate,
+      maximum_heart_rate: maximum_heart_rate
+    }
+  )
 end

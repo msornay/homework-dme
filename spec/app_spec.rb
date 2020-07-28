@@ -1,4 +1,4 @@
-require File.expand_path("../spec_helper.rb", __FILE__)
+require File.expand_path("spec_helper.rb", __dir__)
 
 require "active_support/all"
 
@@ -28,19 +28,21 @@ describe "Cardiologs" do
 
     json_body = JSON.parse(last_response.body)
 
-    expect(json_body.deep_symbolize_keys).to eq({
-      premature_p_waves: 2,
-      premature_qrs_complexes: 3,
-      mean_heart_rate: 49,
-      minimum_heart_rate: {
-        rate: 49,
-        starts_at: "2020-07-28 00:00:02 +0200"
-      },
-      maximum_heart_rate: {
-        rate: 49,
-        starts_at: "2020-07-28 00:00:02 +0200"
+    expect(json_body.deep_symbolize_keys).to eq(
+      {
+        premature_p_waves: 2,
+        premature_qrs_complexes: 3,
+        mean_heart_rate: 49,
+        minimum_heart_rate: {
+          rate: 49,
+          starts_at: "2020-07-28 00:00:02 +0200"
+        },
+        maximum_heart_rate: {
+          rate: 49,
+          starts_at: "2020-07-28 00:00:02 +0200"
+        }
       }
-    })
+    )
   end
 
   it "returns correct data for full data file" do
@@ -50,18 +52,20 @@ describe "Cardiologs" do
 
     json_body = JSON.parse(last_response.body)
 
-    expect(json_body.deep_symbolize_keys).to eq({
-      premature_p_waves: 315,
-      premature_qrs_complexes: 149,
-      mean_heart_rate: 65,
-      minimum_heart_rate: {
-        rate: 17,
-        starts_at: "2020-07-28 00:30:36 +0200"
-      },
-      maximum_heart_rate: {
-        rate: 600,
-        starts_at: "2020-07-28 10:27:57 +0200"
+    expect(json_body.deep_symbolize_keys).to eq(
+      {
+        premature_p_waves: 315,
+        premature_qrs_complexes: 149,
+        mean_heart_rate: 65,
+        minimum_heart_rate: {
+          rate: 17,
+          starts_at: "2020-07-28 00:30:36 +0200"
+        },
+        maximum_heart_rate: {
+          rate: 600,
+          starts_at: "2020-07-28 10:27:57 +0200"
+        }
       }
-    })
+    )
   end
 end
